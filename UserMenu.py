@@ -39,10 +39,9 @@ class UserMenu:
                     choice = self.__prompt__int__range(1,2)
                     if choice == 1:
                         print(f"Thank you, {self.__hero.get_name()}. The world is counting on you.")
-                        return self.display_menu()
                     else:
                         print(f"You gave up on your journey, {self.__hero.get_name()}. You made it to day {30 - self.__days_until_world_end}.")
-                    return True
+                        return True
                 case 1:
                     event = self.__select__event()
                     success = self.play_event(event, self.__hero)
@@ -51,36 +50,27 @@ class UserMenu:
                             self.__progress += 1 # If succeed in event, proceed
                     self.__days_until_world_end -= 1 # World ends sooner no matter what
                     print(f"There are now {self.__days_until_world_end} days until the world ends.")
-                    self.__prompt_continue()
-                    return self.display_menu()
                 case 2:
                     self.__hero.open_inventory()
-                    self.__prompt_continue()
-                    return self.display_menu()
                 case 3:
                     self.__hero.rest()
                     self.__days_until_world_end -= 1
                     print(f"\nThere are now {self.__days_until_world_end} days until the world ends.")
-                    self.__prompt_continue()
-                    return self.display_menu()
                 case 4:
                     print(f"\nDays until world end: {self.__days_until_world_end}")
-                    self.__prompt_continue()
-                    return self.display_menu()
                 case 5:
                     self.__hero.drink_potion() # Does not take up any time
-                    self.__prompt_continue()
-                    return self.display_menu()
+            self.__prompt_continue()
+            return self.display_menu()
         except OutOfRangeException as e:
             print(e)
             return self.display_menu()
         except InputException as e:
             print(e)
             return self.display_menu()
-        except ... as e:
+        except Exception as e:
             print(e)
             return False
-        return True
         
     def play_event(self, event, hero):
         try:
@@ -110,7 +100,7 @@ class UserMenu:
                     print("You have encountered the final boss, the evil Black Dragon.\n")
                     return event.get_character().fight_hero(hero)
             return True
-        except ... as e:
+        except Exception as e:
             print(e)
             return False
     

@@ -121,8 +121,10 @@ class Hero(Character):
             print(f"{self._name} has drunk a health potion and restored to max health of {self._max_health}.")
             self._health = self._max_health
             self._inventory.remove(Items.Health_Potion.name)
+            return True
         else:
             print(f"\n You do not have any health potions.")
+            return False
 
     def rest(self):
         print(f"\n{self._name} has rested and restored to max health of {self._max_health}.")
@@ -135,7 +137,7 @@ class Hero(Character):
             print(f"You have the followiing items in your inventory:")
             self.__rec__print_inventory(self._inventory, 0)
         print(f"You have {self._gold} gold.")
-        print(f"You have {self._health} health.")
+        print(f"You have {self._health} health currently, and {self._max_health} max health.")
         return True
 
     def __rec__print_inventory(self, inventory, index):
@@ -205,6 +207,8 @@ class Merchant(Character):
             print(f"You have chosen to fight the merchant, {user.get_name()}.")
             return self.__fight_hero(user)
         if choice < 0 or choice >= len(self._inventory):
+            print(f"choice is {choice}, len is {len(self._inventory)}, choice < 0 is {choice < 0}, choice >= len is {choice >= len(self._inventory)}")
+            print("this")
             print("Invalid choice. Please try again.")
             return self.__prompt_to_buy(user)
         else:
@@ -244,13 +248,14 @@ class Merchant(Character):
                     user -= self.__prices[choice] # Overloaded operator decreases user gold
                 else:
                     user.add_to_inventory(self._inventory.pop(choice))
-                    user -= self.___prices[choice] # Overloaded operator decreases user gold
+                    user -= self.__prices[choice] # Overloaded operator decreases user gold
                     self.__prices.pop(choice) # We the price and item off the menu
                 return self.__prompt_to_buy(user)
         except ValueError:
+            print("Value")
             print("Invalid choice. Please try again.")
             return self.__prompt_to_buy(user)
-        except ... as e:
+        except Exception as e:
             print(e)
             return False
 
