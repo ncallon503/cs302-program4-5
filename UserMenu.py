@@ -103,6 +103,9 @@ class UserMenu:
         except Exception as e:
             print(e)
             return False
+        
+    def display_tree(self):
+        self.__event_tree.display()
     
     def __prompt__int__range(self, low, high):
         try:

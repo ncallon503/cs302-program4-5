@@ -178,3 +178,19 @@ class RedBlackTree:
             else:
                 print("Event not found.")
                 return False
+            
+    def display(self):
+        if self.get_root() is None:
+            print("Cannot print empty tree.\n")
+            return False
+        return self.__rec_display_helper(self.get_root())
+
+    def __rec_display_helper(self, node):
+        if node is None:
+            return True
+        self.__rec_display_helper(node.get_left())
+        print("--------------------")
+        print(f"Event: {node.get_event()}Chronological order: {node.get_event().get_chronological()}, Character: {node.get_event().get_character().get_name()}, Encounter type: {node.get_event().get_type()}, Color: {node.get_color()}")
+        print("--------------------")
+        self.__rec_display_helper(node.get_right())
+        return True
