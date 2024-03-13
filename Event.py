@@ -15,38 +15,17 @@ class Event: # The event will be stored inside of the nodes of the red black tre
         self.__type = type(character)
 
     def __str__(self): # String method for displaying event
-        return f"Chronological: {self.__chronological}, Name: {self.__name}, Character: {self.__character}, Type: {self.__type}\n"
+        return f"{self.__name}\n"
     
     def get_chronological(self): # Retrieves the order the event should be encountered
         return self.__chronological
     
-    def play_event(self):
-        try:
-            print(f"Encountering event: {self.__name}")
-            if self.__type == "Enemy":
-                print("You have encountered an enemy. Do you wish to fight (1) or flee (2)?")
-                print("You have the following items in your inventory: ", self.__character.get_inventory())
-                print("and you have ", self.__character.get_health(), " health remaining.")
-                print("The enemy requires ", self.__character.get_health(), " health to defeat.")
-                choice = int(input("Please enter your choice: "))
-                if choice == 1:
-                    self.__character.fight_hero()
-                elif choice == 2:
-                    print("You have fled from the enemy.")
-                else:
-                    print("Please enter 1 or 2.")
-                    return self.play_event()
-            elif self.__type == "Merchant":
-                self.__character.open_shop()
-            elif self.__type == "Boss":
-                self.__character.fight_hero()
-            else:
-                print("Invalid character type.")
-                return False
-            return True
-        except:
-            print("Error playing event.")
-            return False
+    def get_character(self):
+        return self.__character
+    
+    def get_type(self):
+        return self.__type
+
 
 class Character:
     def __init__(self, name, health=50, inventory=[], gold=10): # Default health is 100, default inventory is empty, default gold is 10
@@ -143,6 +122,10 @@ class Hero(Character):
         else:
             print(f"{self._name} does not have any health potions.")
 
+    def rest(self):
+        print(f"{self._name} has rested and restored to max health of {self._max_health}.")
+        self._health = self._max_health
+
 class Enemy(Character):
     def __init__(self, name, health=50, inventory=[], gold_dropped=0, health_taken = 30):
         super().__init__(name, health, inventory)
@@ -175,7 +158,7 @@ class Enemy(Character):
             return True
 
 class Merchant(Character):
-    def __init__(self, name, health=150, inventory=[Items.Long_Sword.name, Items.Dragonslayer_Sword.name, Items.Health_Potion.name], prices = [50, 200, 10], gold = 500):
+    def __init__(self, name="Merchant", health=150, inventory=[Items.Long_Sword.name, Items.Dragonslayer_Sword.name, Items.Health_Potion.name], prices = [50, 200, 10], gold = 500):
         super().__init__(name, health, inventory, gold)
         self._prices = prices # Shopkeeper has prices for menu items
 
@@ -194,19 +177,45 @@ class Merchant(Character):
     def __prompt_to_buy(self, user):
         try:
             self.__rec__print_inventory(self._inventory, 0)
-            choice = int(input("Please enter the number of the item you would like to buy, or -1 to leave the merchant: "))
+            choice = int(input("Please enter the number of the item you would like to buy, or -1 to leave the merchant, or...10 to try to fight the merchant: "))
             if choice == -1:
                 print("Thank you for visiting my shop. Goodbye.")
-                return True
+            if choice == 10:
+                print(f"You have chosen to fight the merchant, {user.get_name()}.")
+                return self.__fight_hero(user)
             if choice < 0 or choice >= len(self._inventory):
                 print("Invalid choice. Please try again.")
                 return self.__prompt_to_buy(user)
             else:
                 return self.__sell_item(user, choice)
-                
         except:
             print("Invalid input. Please try again.")
             return self.__prompt_to_buy(user)
+    
+    def __fight_hero(self, hero): # The merchant has a private function because the user must choose through the menu to fight him
+        print(f"{self._name} is fighting {hero.get_name()}.")
+        if hero.get_health() <= self._health:
+            print(f"{self._name} has defeated {hero.get_name()}.")
+            print(f"{hero.get_name()} has taken {self._health_taken} damage.")
+            print(f"{hero.get_name()} has {hero.get_health()} health remaining.")
+            hero.level_up()
+            if hero.get_inventory().count(Items.Long_Sword.name) > 0:
+                print ("Hero has taken half damage with long sword.")
+                hero.set_health(hero.get_health() - self._health_taken / 2)
+            else:
+                hero.set_health(hero.get_health() - self._health_taken)
+            return False
+        else:
+            print(f"{self._name} has been defeated by {hero.get_name()}.")
+            if hero.get_inventory().count(Items.Long_Sword.name) > 0:
+                print ("Hero has taken half damage with long sword.")
+                hero.set_health(hero.get_health() - self._health_taken / 2)
+            else:
+                hero.set_health(hero.get_health() - self._health_taken)
+            self.drop_loot(hero)
+            print(f"{hero.get_name()} has taken {self._health_taken} damage.")
+            print(f"{hero.get_name()} has {hero.get_health()} health remaining.")
+            return True
 
     def __sell_item(self, user, choice):
         if user.get_gold() < self._prices[choice]:

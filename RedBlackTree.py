@@ -75,14 +75,14 @@ class RedBlackTree:
                 to_insert.set_parent(temp)
                 return True
             else:
-                self.__insert_helper(temp.get_left(), to_insert)
-        else:
+                return self.__insert_helper(temp.get_left(), to_insert) # Recursively call
+        else: # If after chronologically
             if temp.get_right() is None:
                 temp.set_right(to_insert)
                 to_insert.set_parent(temp)
                 return True
             else:
-                self.__insert_helper(temp.get_right(), to_insert)
+                return self.__insert_helper(temp.get_right(), to_insert) # Recursively call
 
     def __fix_tree(self, node): # Fixes the tree by rotating nodes and changing colors recursively
         to_return = self.__fix_tree_helper(node) 
@@ -90,44 +90,42 @@ class RedBlackTree:
         return to_return
 
     def __fix_tree_helper(self, node):
-        if node != self.get_root() and node.get_parent().get_color() == "red":
+        if node != self.get_root() and node.get_parent().get_color() == "red": # We need to rotate if if the node is non-root and its parent is red
             parent = node.get_parent()
             grandparent = parent.get_parent()
-            if grandparent is None: # This means the grandparent is the root and we are done traversing
+            if grandparent is None: # This means the grandparent is the root and we don't need to fix anymore
                 return True
             if parent == grandparent.get_left(): # If parent is the left child then that means uncle is a right child
                 uncle = grandparent.get_right()
                 if uncle and uncle.get_color() == "red":
-                    parent.set_color("black")
+                    parent.set_color("black") # If red uncle then we move it's red up and rotate the grandparent to fix the red to black 
                     uncle.set_color("black")
                     grandparent.set_color("red")
-                    node = grandparent
-                    self.__fix_tree_helper(node) # Recursively call until whole tree is fixed
+                    return self.__fix_tree_helper(grandparent) # Recursively call until whole tree is fixed
                 else:
-                    if node == parent.get_right():
+                    if node == parent.get_right(): # If right child
                         node = parent
-                        self.__left_rotate(node)
+                        self.__left_rotate(node) # Rotate left
                     parent.set_color("black")
                     grandparent.set_color("red")
                     self.__right_rotate(grandparent)
-                    self.__fix_tree_helper(node)
+                    return self.__fix_tree_helper(node) # Recursively call
             else:
                 uncle = grandparent.get_left()
-                if uncle and uncle.get_color() == "red":
+                if uncle and uncle.get_color() == "red": # Same as above but inverse
                     parent.set_color("black")
                     uncle.set_color("black")
                     grandparent.set_color("red")
-                    node = grandparent
-                    self.__fix_tree_helper(node)
+                    return self.__fix_tree_helper(grandparent) # Recursively call
                 else:
-                    if node == parent.get_left():
+                    if node == parent.get_left(): # If left child
                         node = parent
-                        self.__right_rotate(node)
+                        self.__right_rotate(node) # Rotate right
                     parent.set_color("black")
                     grandparent.set_color("red")
                     self.__left_rotate(grandparent)
-                    self.__fix_tree_helper(node)
-        return True
+                    return self.__fix_tree_helper(node) # Recursively call
+        return True # If node's parent is not red and is not the root we don't need to continue traversing
 
     def __left_rotate(self, to_become_left): # If node and its parent are red then we rotate left depending on if left or right parent
         temp = to_become_left.get_right() # Stores original right which will become new "root" of subtree
