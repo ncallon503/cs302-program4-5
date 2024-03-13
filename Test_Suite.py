@@ -25,7 +25,8 @@ def Merchant():
 
 @pytest.fixture
 def Menu():
-    return UserMenu.UserMenu()
+    with patch('builtins.input', side_effect=['hero','']):
+        return UserMenu.UserMenu()
 
 @pytest.fixture
 def Tree():
@@ -53,6 +54,9 @@ def test_enemy_drop_loot(Hero, Goblin): # Test for user getting gold from a a ba
 def test_merchant_drop_loot(Hero, Merchant): # Test for user getting gold (and items) from defeating a merchant
     Merchant.drop_loot(Hero)
     assert Hero.get_gold() == 500
+    assert Hero.get_inventory().count(Event.Items.Long_Sword.name) == 1
+    assert Hero.get_inventory().count(Event.Items.Dragonslayer_Sword.name) == 1
+    assert Hero.get_inventory().count(Event.Items.Health_Potion.name) == 1
 
 def test_lose_to_goblin(Hero, Goblin): # Test for if user doesn't have enough health to defeat a goblin
     Hero.set_health(49)
@@ -93,6 +97,12 @@ def test_insert_and_retrieve_event(Tree, Goblin): # Test for inserting events in
     assert Tree.get_event(0).get_type() == Event.Enemy
 
 def test_can_exit_menu(Menu): # Test for user exiting the menu
-    with patch('builtins.input', side_effect=['hero','','0','2','0','2','0','2','0','2']): # Mock user input
-        menu = UserMenu.UserMenu()
-        menu.display_menu()
+    with patch('builtins.input', side_effect=['0','2']): # Mock user input
+        assert Menu.display_menu() == True
+
+def test_can_play_event_(Menu, Hero): # Test for user playing an event
+    with patch('builtins.input', side_effect=['1','1']): # Mock user input
+        event = Event.Event(0,'Enemy encounter (Goblin)', Event.Enemy("Goblin", 50, [], 10, 30))
+        assert Menu.play_event(event, Hero) == True # Hero should succeed with default stats
+        Hero.set_health(0)
+        assert Menu.play_event(event, Hero) == False # Hero should lose fight with 0 health
