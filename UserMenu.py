@@ -23,7 +23,7 @@ class UserMenu:
 
     def display_menu(self):
         try:
-            print("\nPlease enter one of the options:\n")
+            print("Please enter one of the options:\n")
             print("1. Continue your journey (encounter)")
             print("2. View your inventory, gold, and health")
             print("3. Rest (heal) at expense of time")
@@ -35,14 +35,14 @@ class UserMenu:
                 case 0:
                     print("Are you sure you want to give up on your journey? The world needs you.")
                     print("1. No, I will save the world.")
-                    print("2. Yes, I give up.")
+                    print("2. Yes, I give up.\n")
                     choice = self.__prompt__int__range(1,2)
                     if choice == 1:
                         print(f"Thank you, {self.__hero.get_name()}. The world is counting on you.")
                         return self.display_menu()
                     else:
                         print(f"You gave up on your journey, {self.__hero.get_name()}. You made it to day {30 - self.__days_until_world_end}.")
-                    return 0
+                    return True
                 case 1:
                     event = self.__select__event()
                     success = self.play_event(event, self.__hero)
@@ -50,22 +50,21 @@ class UserMenu:
                         if(self.__progress != self.__max_progress): # Don't want to progress past limit
                             self.__progress += 1 # If succeed in event, proceed
                     self.__days_until_world_end -= 1 # World ends sooner no matter what
+                    print(f"There are now {self.__days_until_world_end} days until the world ends.")
                     self.__prompt_continue()
                     return self.display_menu()
                 case 2:
-                    print(f"\nInventory: {self.__hero.get_inventory()}")
-                    print(f"Gold: {self.__hero.get_gold()}")
-                    print(f"Health: {self.__hero.get_health()}/{self.__hero.get_max_health()}")
+                    self.__hero.open_inventory()
                     self.__prompt_continue()
                     return self.display_menu()
                 case 3:
                     self.__hero.rest()
                     self.__days_until_world_end -= 1
-                    print(f"There are now {self.__days_until_world_end} days until the world ends.")
+                    print(f"\nThere are now {self.__days_until_world_end} days until the world ends.")
                     self.__prompt_continue()
                     return self.display_menu()
                 case 4:
-                    print(f"\nDays until world end: {self.__days_until_world_end}\n")
+                    print(f"\nDays until world end: {self.__days_until_world_end}")
                     self.__prompt_continue()
                     return self.display_menu()
                 case 5:
@@ -81,14 +80,19 @@ class UserMenu:
         except ... as e:
             print(e)
             return False
+        return True
         
     def play_event(self, event, hero):
         try:
             print(f"Encountering event: {event}")
             match event.get_type():
                 case Event.Enemy:
-                    print("You have encountered an enemy.\n")
-                    print(f"You have the following items in your inventory: {self.__hero.get_inventory()}")
+                    print(f"You have encountered an enemy {event.get_character().get_name()}.")
+                    if len(self.__hero.get_inventory()) == 0:
+                        print(f"\nYou have no items in your inventory,")
+                    else:
+                        print(f"You have the followiing items in your inventory:")
+                        self.__hero.open_inventory()
                     print(f"and you have {self.__hero.get_health()} health remaining.")
                     print(f"The enemy requires {event.get_character().get_health()} health to defeat.")
                     print("Do you wish to fight (1) or flee (2)?\n")
@@ -119,8 +123,8 @@ class UserMenu:
         except OutOfRangeException as e:
             print(e)
             return self.__prompt__int__range(low, high)
-        except ... as e:
-            print("Invalid input. Please try again.")
+        except:
+            print(f"Please enter an integer between {low} and {high}.")
             return self.__prompt__int__range(low, high)
 
     def __select__event(self):
@@ -158,12 +162,11 @@ class UserMenu:
             print(f"You have an inventory and can acquire certain items to help you on your journey, but to find and slay the dragon,")
             print(f"To defeat, the Black Dragon, you must have the Black Dragon Eye and Dragonslayer Sword. You can find these items from merchants or enemies.")
             print(f"Good luck, {self.__hero.get_name()}.")
-            print()
             self.__prompt_continue() # Simple for pressing enter to read
         except:
             print("Invalid input. Please try again.")
             self.__initialize_hero()
 
     def __prompt_continue(self): # Simple function for readability for menu
-        print("Press enter to continue...")
+        print("\nPress enter to continue...\n")
         input()

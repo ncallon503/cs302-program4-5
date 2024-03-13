@@ -55,6 +55,8 @@ class Character:
     
     def set_health(self, health):
         self._health = health
+        if(health <= 0):
+            self._health = 0 # Can't go negative
         return True
     
     def set_gold(self, gold):
@@ -120,30 +122,47 @@ class Hero(Character):
             self._health = self._max_health
             self._inventory.remove(Items.Health_Potion.name)
         else:
-            print(f"{self._name} does not have any health potions.")
+            print(f"\n You do not have any health potions.")
 
     def rest(self):
-        print(f"{self._name} has rested and restored to max health of {self._max_health}.")
+        print(f"\n{self._name} has rested and restored to max health of {self._max_health}.")
         self._health = self._max_health
 
+    def open_inventory(self):
+        if(len(self._inventory) == 0):
+            print(f"\nYou have no items in your inventory.")
+        else:
+            print(f"You have the followiing items in your inventory:")
+            self.__rec__print_inventory(self._inventory, 0)
+        print(f"You have {self._gold} gold.")
+        print(f"You have {self._health} health.")
+        return True
+
+    def __rec__print_inventory(self, inventory, index):
+        if len(inventory) == 0:
+            return False
+        if index == len(inventory):
+            return True
+        print(f"{index}. {inventory[index]}")
+        return self.__rec__print_inventory(inventory, index + 1)
+
 class Enemy(Character):
-    def __init__(self, name, health=50, inventory=[], gold_dropped=0, health_taken = 30):
-        super().__init__(name, health, inventory)
-        self._gold_dropped = gold_dropped
+    def __init__(self, name, health=50, inventory=[], gold=0, health_taken = 30):
+        super().__init__(name, health, inventory, gold)
+        self._gold = gold
         self._health_taken = health_taken
 
     def fight_hero(self, hero): # For the fights with the hero, the other character calls this function passing the hero in
         print(f"{self._name} is fighting {hero.get_name()}.")
         if hero.get_health() <= self._health:
             print(f"{self._name} has defeated {hero.get_name()}.")
-            print(f"{hero.get_name()} has taken {self._health_taken} damage.")
-            print(f"{hero.get_name()} has {hero.get_health()} health remaining.")
-            hero.level_up()
+            print(f"{hero.get_name()} has taken {self._health_taken} damage.")            
             if hero.get_inventory().count(Items.Long_Sword.name) > 0:
                 print ("Hero has taken half damage with long sword.")
                 hero.set_health(hero.get_health() - self._health_taken / 2)
             else:
                 hero.set_health(hero.get_health() - self._health_taken)
+            print(f"{hero.get_name()} has {hero.get_health()} health remaining.")
             return False
         else:
             print(f"{self._name} has been defeated by {hero.get_name()}.")
@@ -155,12 +174,13 @@ class Enemy(Character):
             self.drop_loot(hero)
             print(f"{hero.get_name()} has taken {self._health_taken} damage.")
             print(f"{hero.get_name()} has {hero.get_health()} health remaining.")
+            hero.level_up()
             return True
 
 class Merchant(Character):
     def __init__(self, name="Merchant", health=150, inventory=[Items.Long_Sword.name, Items.Dragonslayer_Sword.name, Items.Health_Potion.name], prices = [50, 200, 10], gold = 500):
         super().__init__(name, health, inventory, gold)
-        self._prices = prices # Shopkeeper has prices for menu items
+        self.__prices = prices # Shopkeeper has prices for menu items
 
     def open_shop(self, user):
         print(f"Welcome to my shop, {user.get_name()}.")
@@ -171,65 +191,68 @@ class Merchant(Character):
     def __rec__print_inventory(self, inventory, index):
         if index == len(inventory):
             return True
-        print(f"{index}. {inventory[index]} - {self._prices[index]} gold.")
+        print(f"{index}. {inventory[index]} - {self.__prices[index]} gold.")
         return self.__rec__print_inventory(inventory, index + 1)
 
     def __prompt_to_buy(self, user):
-        try:
-            self.__rec__print_inventory(self._inventory, 0)
-            choice = int(input("Please enter the number of the item you would like to buy, or -1 to leave the merchant, or...10 to try to fight the merchant: "))
-            if choice == -1:
-                print("Thank you for visiting my shop. Goodbye.")
-            if choice == 10:
-                print(f"You have chosen to fight the merchant, {user.get_name()}.")
-                return self.__fight_hero(user)
-            if choice < 0 or choice >= len(self._inventory):
-                print("Invalid choice. Please try again.")
-                return self.__prompt_to_buy(user)
-            else:
-                return self.__sell_item(user, choice)
-        except:
-            print("Invalid input. Please try again.")
+        self.__rec__print_inventory(self._inventory, 0)
+        print(f"\nYou have {user.get_gold()} gold.")
+        choice = int(input("\nPlease enter the number of the item you would like to buy, \n-1 to leave the merchant, or...\n-2 to try to fight the merchant.\nPlease enter one of the following options.\n"))
+        if choice == -1:
+            print("Thank you for visiting my shop. Goodbye.")
+            return True
+        if choice == -2:
+            print(f"You have chosen to fight the merchant, {user.get_name()}.")
+            return self.__fight_hero(user)
+        if choice < 0 or choice >= len(self._inventory):
+            print("Invalid choice. Please try again.")
             return self.__prompt_to_buy(user)
+        else:
+            return self.__sell_item(user, choice)
     
     def __fight_hero(self, hero): # The merchant has a private function because the user must choose through the menu to fight him
+        health_taken = 100 # Merchant will always deal 100 damage (or half with long sword)
         print(f"{self._name} is fighting {hero.get_name()}.")
         if hero.get_health() <= self._health:
             print(f"{self._name} has defeated {hero.get_name()}.")
-            print(f"{hero.get_name()} has taken {self._health_taken} damage.")
+            hero.set_health(0)
+            print(f"{hero.get_name()} has taken {hero.get_max_health()} damage.")
             print(f"{hero.get_name()} has {hero.get_health()} health remaining.")
-            hero.level_up()
-            if hero.get_inventory().count(Items.Long_Sword.name) > 0:
-                print ("Hero has taken half damage with long sword.")
-                hero.set_health(hero.get_health() - self._health_taken / 2)
-            else:
-                hero.set_health(hero.get_health() - self._health_taken)
             return False
         else:
             print(f"{self._name} has been defeated by {hero.get_name()}.")
             if hero.get_inventory().count(Items.Long_Sword.name) > 0:
                 print ("Hero has taken half damage with long sword.")
-                hero.set_health(hero.get_health() - self._health_taken / 2)
+                hero.set_health(hero.get_health() - health_taken / 2)
+                print(f"{hero.get_name()} has taken {health_taken / 2} damage.")
             else:
-                hero.set_health(hero.get_health() - self._health_taken)
+                hero.set_health(hero.get_health() - health_taken)
+                print(f"{hero.get_name()} has taken {health_taken} damage.")
             self.drop_loot(hero)
-            print(f"{hero.get_name()} has taken {self._health_taken} damage.")
-            print(f"{hero.get_name()} has {hero.get_health()} health remaining.")
+            hero.level_up()
             return True
 
     def __sell_item(self, user, choice):
-        if user.get_gold() < self._prices[choice]:
-            print("\nYou do not have enough gold to purchase this item.")
-            return self.__prompt_to_buy(user)
-        else:
-            print(f"You have purchased {user._inventory[-1]} for {self._prices[choice]} gold.")
-            if self._inventory[choice] == Items.Health_Potion.name:
-                user.add_to_inventory(self._inventory[choice]) # We don't pop health potions, merchant has infinite
+        try:
+            if user.get_gold() < self.__prices[choice]:
+                print("\nYou do not have enough gold to purchase this item.")
+                return self.__prompt_to_buy(user)
             else:
-                user.add_to_inventory(self._inventory.pop(choice))
-                self._prices.pop(choice) # We the price and item off the menu
-            user -= self.prices[choice] # Overloaded operator decreases user gold
-            return True
+                print(f"You have purchased {self._inventory[choice]} for {self.__prices[choice]} gold.\n")
+                if self._inventory[choice] == Items.Health_Potion.name:
+                    user.add_to_inventory(self._inventory[choice]) # We don't pop health potions, merchant has infinite
+                    user -= self.__prices[choice] # Overloaded operator decreases user gold
+                else:
+                    user.add_to_inventory(self._inventory.pop(choice))
+                    user -= self.___prices[choice] # Overloaded operator decreases user gold
+                    self.__prices.pop(choice) # We the price and item off the menu
+                return self.__prompt_to_buy(user)
+        except ValueError:
+            print("Invalid choice. Please try again.")
+            return self.__prompt_to_buy(user)
+        except ... as e:
+            print(e)
+            return False
 
 
 class Boss(Character):
