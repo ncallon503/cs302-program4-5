@@ -5,6 +5,7 @@ class Node:
         self.__parent = None  # Parent initialized to None
         self.__left = None  # Left child initialized to None
         self.__right = None  # Right child initialized to None
+        self.__duplicate_list = []  # List of duplicate events (chronologically have the same priority)
 
     def get_left(self):
         return self.__left
@@ -20,6 +21,13 @@ class Node:
     
     def get_color(self):
         return self.__color
+    
+    def get_duplicates(self):
+        return self.__duplicate_list
+    
+    def add_duplicate(self, to_add):
+        self.__duplicate_list.append(to_add)
+        return True
     
     def set_left(self, left):
         self.__left = left
@@ -40,6 +48,9 @@ class Node:
     def set_color(self, color):
         self.__color = color
         return True
+    
+    def pop_duplicate(self):
+        return self.__duplicate_list.pop()
 
 class RedBlackTree:
     def __init__(self):
@@ -64,10 +75,16 @@ class RedBlackTree:
 
     def get_event(self, chronological): # Returns an event by the chronological estimate
         return self.__get_event_helper(chronological, self.get_root())
+            
+    def display(self):
+        if self.get_root() is None:
+            print("Cannot print empty tree.\n")
+            return False
+        return self.__rec_display_helper(self.get_root())
 
     def __insert_helper(self, temp, to_insert):
         if to_insert.get_event().get_chronological() == temp.get_event().get_chronological(): # If duplicate priority
-            print("Cannot have duplicate priority as other events.")
+            temp.add_duplicate(to_insert) # Add to duplicate list
             return False
         if to_insert.get_event().get_chronological() < temp.get_event().get_chronological(): # If before chronologically
             if temp.get_left() is None:
@@ -178,12 +195,6 @@ class RedBlackTree:
             else:
                 print("Event not found.")
                 return False
-            
-    def display(self):
-        if self.get_root() is None:
-            print("Cannot print empty tree.\n")
-            return False
-        return self.__rec_display_helper(self.get_root())
 
     def __rec_display_helper(self, node):
         if node is None:

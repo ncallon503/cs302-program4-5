@@ -1,4 +1,5 @@
 import enum
+import numpy as np
 
 class Items(enum.Enum):
     Long_Sword = 1
@@ -180,8 +181,9 @@ class Enemy(Character):
             return True
 
 class Merchant(Character):
-    def __init__(self, name="Merchant", health=150, inventory=[Items.Long_Sword.name, Items.Dragonslayer_Sword.name, Items.Health_Potion.name], prices = [50, 200, 10], gold = 500):
+    def __init__(self, name="Merchant", health=150, inventory=[Items.Long_Sword.name, Items.Dragonslayer_Sword.name, Items.Health_Potion.name], prices = np.array([50, 200, 10]), gold = 500):
         super().__init__(name, health, inventory, gold)
+        # prices = np.array(prices)
         self.__prices = prices # Shopkeeper has prices for menu items
 
     def open_shop(self, user):
@@ -249,7 +251,7 @@ class Merchant(Character):
                 else:
                     user.add_to_inventory(self._inventory.pop(choice))
                     user -= self.__prices[choice] # Overloaded operator decreases user gold
-                    self.__prices.pop(choice) # We the price and item off the menu
+                    self.__shift_price_array_down(choice) # Shifts the prices down after the item is removed
                 return self.__prompt_to_buy(user)
         except ValueError:
             print("Value")
@@ -258,6 +260,12 @@ class Merchant(Character):
         except Exception as e:
             print(e)
             return False
+        
+    def __shift_price_array_down(self, index): # We can use this essentially as a replacement for "pop" in our numpy array of prices
+        if index == len(self.__prices):
+            return True
+        self.__prices[index] = self.__prices[index + 1]
+        return self.__shift_price_array_down(index + 1)
 
 
 class Boss(Character):
