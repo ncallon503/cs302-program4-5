@@ -264,7 +264,8 @@ class Merchant(Character):
     def __shift_price_array_down(self, index): # We can use this essentially as a replacement for "pop" in our numpy array of prices
         if index == len(self.__prices):
             return True
-        self.__prices[index] = self.__prices[index + 1]
+        if self.__prices[index + 1]: # Don't want to go out of bounds
+            self.__prices[index] = self.__prices[index + 1]
         return self.__shift_price_array_down(index + 1)
 
 
