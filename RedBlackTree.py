@@ -26,8 +26,7 @@ class Node:
         return self.__duplicate_list
     
     def add_duplicate(self, to_add):
-        self.__duplicate_list.append(to_add)
-        return True
+        return self.__duplicate_list.append(to_add)
     
     def set_left(self, left):
         self.__left = left
