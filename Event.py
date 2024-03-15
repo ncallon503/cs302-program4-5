@@ -266,6 +266,8 @@ class Merchant(Character):
             return True
         if self.__prices[index + 1]: # Don't want to go out of bounds
             self.__prices[index] = self.__prices[index + 1]
+        else:
+            self.__prices[index] = None
         return self.__shift_price_array_down(index + 1)
 
 
