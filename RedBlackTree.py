@@ -1,3 +1,9 @@
+# For this program, I chose the red black tree to store all the events the user can encounter, and they are stored
+# from left to right chronologically, and if there are multiple events with the same chronological estimate, they are stored in a duplicate list.
+# I used recursion for all of the functions in this tree and implemented the insert, retrieve and display functions.
+# In the program I use 16 total encounters but if I scaled this game up and made it longer/more complex it would still have
+# good performance due to the use of a red black tree instead of a simple binary search tree.
+
 class Node:
     def __init__(self, event, color):
         self.__event = event  # Store's the event of the node and we will sort the nodes by the event's chronological estimate (boss node will be rightmost)
@@ -102,14 +108,14 @@ class RedBlackTree:
 
     def __fix_tree(self, node): # Fixes the tree by rotating nodes and changing colors recursively
         to_return = self.__fix_tree_helper(node) 
-        self.get_root().color = 'black' # Root must always be black in red black tree so we set to black after recursive call done
+        self.get_root().set_color('black') # Root must always be black in red black tree so we set to black after recursive call done
         return to_return
 
     def __fix_tree_helper(self, node):
         if node != self.get_root() and node.get_parent().get_color() == "red": # We need to rotate if if the node is non-root and its parent is red
             parent = node.get_parent()
             grandparent = parent.get_parent()
-            if grandparent is None: # This means the grandparent is the root and we don't need to fix anymore
+            if grandparent is None: # This means the parent is the root and we don't need to fix anymore
                 return True
             if parent == grandparent.get_left(): # If parent is the left child then that means uncle is a right child
                 uncle = grandparent.get_right()

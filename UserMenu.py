@@ -1,3 +1,8 @@
+# The User Menu class stores a red black tree and has a recursive menu that calls itself at the end of each interaction.
+# It uses exception handling in the form of handling user inputs and throwing the correct types of errors and telling
+# the user what to do in the case of these exceptions. This is essentially the "main" of the program and handles all
+# user interaction. It also manages variables such as days until the world ends, the hero, and the hero's progress.
+
 import RedBlackTree
 import Event
 import random

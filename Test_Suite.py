@@ -1,4 +1,7 @@
-# Nathan Callon, CS302, 3/13/2024 Test Suite
+# For the test suite I implemented tests for each layer of the hierarchy, ranging from Events,
+# to events inside of a tree interacting with the outside, all the way to the user menu with mock input.
+# I used patch from unittest.mock to simulate user input so the menu could be properly tested.
+# Fixtures were also used to make the tests more readable and to avoid code duplication.
 
 import pytest
 from unittest.mock import patch

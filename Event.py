@@ -1,3 +1,9 @@
+# The events are the heart of the program which are the way the user interacts and progresses
+# into the game. They are written from the "Character"'s point of view that are interacting with the
+# "hero" using their own functions that they pass hero into, such as drop_loot(hero), fight_hero(hero),
+# and open_shop(hero). The hero has their own functions such as level_up(), drink_potion(), and rest(),
+# but the most happens in the User Menu (see UserMenu.py) for terms of actually progressing forward in terms of events.
+
 import enum
 import numpy as np
 
