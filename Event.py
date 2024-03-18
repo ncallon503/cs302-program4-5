@@ -89,17 +89,19 @@ class Character:
         return self._drop_loot_recursive(other_character, index + 1) # Recursively calls
 
     def __iadd__(self, gold): # The overloaded increment and decrement decrease and increase gold by an integer
-        if isinstance(gold, int):
-            self._gold += gold
+        if isinstance(gold, int) or isinstance(gold, float):
+            self._gold += int(gold)
         else:
-            raise TypeError("Can only increment by an integer.")
+            raise TypeError("Can only increment by a number.")
         return self
     
     def __isub__(self, gold):
-        if isinstance(gold, int):
-            self._gold -= gold
+        if isinstance(gold, int) or isinstance(gold, float):
+            self._gold -= int(gold)
+            if self._gold < 0:
+                self._gold = 0 # Can't have negative gold
         else:
-            raise TypeError("Can only decrement by an integer.")
+            raise TypeError("Can only decrement by a number.")
         return self
 
 class Hero(Character):
@@ -247,10 +249,10 @@ class Merchant(Character):
                 print(f"You have purchased {self._inventory[choice]} for {self.__prices[choice]} gold.\n")
                 if self._inventory[choice] == Items.Health_Potion.name:
                     user.add_to_inventory(self._inventory[choice]) # We don't pop health potions, merchant has infinite
-                    user -= self.__prices[choice] # Overloaded operator decreases user gold
+                    user -= int(self.__prices[choice]) # Overloaded operator decreases user gold
                 else:
                     user.add_to_inventory(self._inventory.pop(choice))
-                    user -= self.__prices[choice] # Overloaded operator decreases user gold
+                    user -= int(self.__prices[choice]) # Overloaded operator decreases user gold
                     self.__shift_price_array_down(choice) # Shifts the prices down after the item is removed
                 return self.__prompt_to_buy(user)
         except ValueError:
@@ -262,13 +264,12 @@ class Merchant(Character):
             return False
         
     def __shift_price_array_down(self, index): # We can use this essentially as a replacement for "pop" in our numpy array of prices
-        if index == len(self.__prices):
+        if index >= len(self.__prices) - 1:
+            self.__prices[index] = 0 
             return True
-        if self.__prices[index + 1]: # Don't want to go out of bounds
-            self.__prices[index] = self.__prices[index + 1]
-        else:
-            self.__prices[index] = None
-        return self.__shift_price_array_down(index + 1)
+        self.__prices[index] = self.__prices[index + 1]  # Shift the element down
+        return self.__shift_price_array_down(index + 1)  # Recursively continue shifting
+
 
 
 class Boss(Character):

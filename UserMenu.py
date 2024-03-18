@@ -13,9 +13,9 @@ class OutOfRangeException(Exception):
 
 class UserMenu:
     def __init__(self):
-        self.__days_until_world_end = 30 # 30 days for user to complete the quest
+        self.__days_until_world_end = 40 # 40 days for user to complete the quest
         self.__progress = 0 # Progress of the hero
-        self.__max_progress = 14 # There will be 16 events total, so due to the variation being 2 we do 16-2 so the tree doesn't go out of bounds when __select__event is called 
+        self.__max_progress = 13 # There will be 16 events total, so due to the variation being 2 we do 16-2 so the tree doesn't go out of bounds when __select__event is called 
         self.__hero = None
         self.__event_tree = RedBlackTree.RedBlackTree()
         self.__initialize_events()
@@ -23,6 +23,11 @@ class UserMenu:
 
     def display_menu(self):
         try:
+            if self.__days_until_world_end == 0: # If the world ends
+                print(f"You have tried your best, {self.__hero.get_name()}. It is too late and the Black Dragon has taken over the world.")
+                print("The world is now in darkness.")
+                return True
+            
             print("Please enter one of the options:\n")
             print("1. Continue your journey (encounter)")
             print("2. View your inventory, gold, and health")
@@ -40,7 +45,7 @@ class UserMenu:
                     if choice == 1:
                         print(f"Thank you, {self.__hero.get_name()}. The world is counting on you.")
                     else:
-                        print(f"You gave up on your journey, {self.__hero.get_name()}. You made it to day {30 - self.__days_until_world_end}.")
+                        print(f"You gave up on your journey, {self.__hero.get_name()}. You made it to day {40 - self.__days_until_world_end}.")
                         return True
                 case 1:
                     event = self.__select__event()
@@ -98,7 +103,13 @@ class UserMenu:
                     return event.get_character().open_shop(hero)
                 case Event.Boss:
                     print("You have encountered the final boss, the evil Black Dragon.\n")
-                    return event.get_character().fight_hero(hero)
+                    victory = event.get_character().fight_hero(hero)
+                    if victory:
+                        print(f"You have defeated the Black Dragon and saved the world, {self.__hero.get_name()}!")
+                        print(f"It took you " + str(40 - self.__days_until_world_end) + " days to complete your journey.")
+                        print("Thank you for playing!")
+                        exit()
+                    return victory
             return True
         except Exception as e:
             print(e)
@@ -141,7 +152,7 @@ class UserMenu:
         self.__event_tree.insert(Event.Event(9,'Enemy encounter (Harpy)', Event.Enemy("Harpy", 75, [], 15, 45)))
         self.__event_tree.insert(Event.Event(10,'Enemy encounter (Baby Dragon)', Event.Enemy("Baby Dragon", 150, ["Black_Dragon_Eye"], 30, 50)))
         self.__event_tree.insert(Event.Event(11,'Merchant encounter', Event.Merchant("Merchant")))
-        self.__event_tree.insert(Event.Event(12,'Enemy encounter (Heavy Orc)', Event.Enemy("Heavy Orc", 150, [], 30, 60)))
+        self.__event_tree.insert(Event.Event(12,'Enemy encounter (Heavy Orc)', Event.Enemy("Heavy Orc", 130, [], 30, 60)))
         self.__event_tree.insert(Event.Event(13,'Merchant encounter', Event.Merchant("Merchant")))
         self.__event_tree.insert(Event.Event(14,'Enemy encounter (Baby Dragon)', Event.Enemy("Baby Dragon", 150, ["Black_Dragon_Eye"], 30, 50)))
         self.__event_tree.insert(Event.Event(15,'Boss encounter (Dragon)', Event.Boss("Black Dragon", 200)))
